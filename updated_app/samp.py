@@ -51,7 +51,7 @@ img_label=CTkLabel(l1,text=" ",image=label_img)
 img_label.place(x=100,y=5)
 
 img_label2=CTkLabel(l1,text=" ",image=label_img)
-img_label2.place(x=1200,y=5)
+img_label2.place(x=1225,y=5)
 
 back_img=Image.open("back.jpg")
 bck_img=CTkImage(light_image=back_img,size=(1400,800))
@@ -346,7 +346,7 @@ def next_screen():
     img_label.place(x=100,y=5)
 
     img_label2=CTkLabel(l1,text=" ",image=label_img)
-    img_label2.place(x=1200,y=5)
+    img_label2.place(x=1225,y=5)
 
     global new_f1,back_new_label
 
