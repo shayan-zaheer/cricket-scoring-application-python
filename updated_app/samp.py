@@ -128,33 +128,6 @@ team_name1.bind('<KeyRelease>', toss)
 team_name2.bind('<KeyRelease>', toss)
 opt.bind('<KeyRelease>', toss)
 
-def extract_data_from_treeview(treeview):
-    data = []
-    for item in treeview.get_children():
-        values = treeview.item(item, 'values')
-        data.append(values)
-    return data
-
-# def pdfExists(path):
-#     return os.path.isfile(path)
-
-def create_pdf(data1, data2, filename):
-    pdf = canvas.Canvas(filename, pagesize=letter)
-    pdf.setFont("Helvetica", 12)
-
-    pdf.drawString(100, 750, f"{team_a} Batting") #BATSMAN","RUNS","BALLS","STRIKE_RATE
-    y_position = 730
-    for i in data1:
-        pdf.drawString(100, y_position, f"Batsman: {i[0]}, Runs: {i[1]}, Balls: {i[2]}, Strike Rate: {i[3]}")
-        y_position -= 20
-
-    pdf.drawString(100, y_position - 40, f"{team_b} Balling") #BOWLER","OVERS","RUNS","WICKETS
-    y_position -= 60
-    for i in data2:
-        pdf.drawString(100, y_position, f"Bowler: {i[0]}, Overs: {i[1]}, Runs: {i[2]}, Wickets: {i[3]}")
-        y_position -= 20
-    pdf.save()
-
 def batter_name(bat_name_1,bat_name_2,batting):
     #this function just inserts batsmen names in tables
     conn = sqlite3.connect('score.db')
@@ -318,6 +291,7 @@ def next_screen():
     global overs_lim
     global match_format
     global match_format_var
+    global bottom_news
 
     _1_bat_name = str(bat_1_name.get())
     _2_bat_name = str(bat_2_name.get())
@@ -385,11 +359,8 @@ def next_screen():
     new=CTkFrame(new_f1,corner_radius=0,border_width=5,border_color="darkGreen",width=345,height=637)
     new.place(x=0,y=0)
     
-    
     runlab=CTkLabel(new,text="RUNS BUTTONS",width=345,font=("Arial Black",26),text_color="white",height=35,fg_color="darkBlue")
     runlab.place(x=0,y=0)
-
-
     
     global dot_b
     dot_b=CTkButton(new,text="DOT",command=dot,fg_color="#FF0000",hover=True,hover_color="orange",font=("Arial",15,"bold"),corner_radius=15,border_width=3,border_color="darkGreen",width=30,height=20)
@@ -569,6 +540,52 @@ def next_screen():
     sum_but=CTkButton(score_f,text="MATCH SUMMARY",command=summary,fg_color="#FF0000",hover=True,hover_color="orange",font=("Arial",15,"bold"),corner_radius=15,border_width=3,border_color="darkGreen",width=50,height=20)
     sum_but.place(x=380,y=400)
     
+def extract_data_from_db(table_name):
+    conn = sqlite3.connect("score.db")
+    c = conn.cursor()
+    c.execute(f"""SELECT * FROM {table_name}""")
+    data = c.fetchall()
+    conn.close()
+    return data
+
+def create_pdf(team_a_bat_table, team_b_bowl_table, team_b_bat_table, team_a_bowl_table, filename):
+    team_a_bat_data = extract_data_from_db(team_a_bat_table)
+    team_b_bowl_data = extract_data_from_db(team_b_bowl_table)
+    team_b_bat_data = extract_data_from_db(team_b_bat_table)
+    team_a_bowl_data = extract_data_from_db(team_a_bowl_table)
+
+    pdf = canvas.Canvas(filename, pagesize=letter)
+    pdf.setFont("Helvetica", 12)
+    pdf.setFillColorRGB(1, 1, 1) # making font color white
+
+    pdf.drawImage("pdf_back.png", 0, 0, width=letter[0], height=letter[1], preserveAspectRatio=True)
+
+    pdf.drawString(100, 750, f"{team_a} Batting")
+    y_position = 730
+    for i in team_a_bat_data:
+        pdf.drawString(100, y_position, f"Batsman: {i[0]}, Runs: {i[1]}, Balls: {i[2]}, Strike Rate: {i[3]}")
+        y_position -= 20
+
+    pdf.drawString(100, y_position - 40, f"{team_b} Bowling")
+    y_position -= 60
+    for i in team_b_bowl_data:
+        pdf.drawString(100, y_position, f"Bowler: {i[0]}, Overs: {i[1]}, Runs: {i[2]}, Wickets: {i[3]}")
+        y_position -= 20
+
+    pdf.drawString(100, y_position - 100, f"{team_b} Batting")
+    y_position -= 120
+    for i in team_b_bat_data:
+        pdf.drawString(100, y_position, f"Batsman: {i[0]}, Runs: {i[1]}, Balls: {i[2]}, Strike Rate: {i[3]}")
+        y_position -= 20
+
+    pdf.drawString(100, y_position - 40, f"{team_a} Bowling")
+    y_position -= 60
+    for i in team_a_bowl_data:
+        pdf.drawString(100, y_position, f"Bowler: {i[0]}, Overs: {i[1]}, Runs: {i[2]}, Wickets: {i[3]}")
+        y_position -= 20
+
+    pdf.save()
+
 def summary():
     s=Tk()
     s.geometry("1100x900+300+50")
@@ -645,12 +662,9 @@ def summary():
     conn.commit()
     conn.close()
 
-    tree1_data = extract_data_from_treeview(tree)
-    tree2_data = extract_data_from_treeview(tree2)
-
     data_file = f"{match_id}_data.pdf"
-    if innings_no == 2 and OVERS == int(overs_lim):
-        create_pdf(tree1_data, tree2_data, data_file)
+    if (innings_no == 2 and OVERS == int(overs_lim)) or wickets==10:
+        create_pdf(team_a_batting, team_b_bowling, team_b_batting, team_a_bowling, data_file)
         CTkMessagebox(title="Match Summary", message=f"Your match summary {data_file} has been saved.", icon="info", button_color="darkGreen")
 
 def display():
@@ -717,7 +731,14 @@ def display():
     if OVERS%1==0 and OVERS!=0:
         recent=["","","","","","","","","",""]
         record_str=""
-    # record1_lab.configure(text=record_str)
+
+    if innings_no == 2 and BALLS>0:
+        max_overs = int(overs_lim)
+        current_overs = int(OVERS)
+        current_balls = int((OVERS - current_overs) * 10)
+
+        remaining_balls = (max_overs - current_overs) * 6 - current_balls
+        bottom_news.configure(text=f"Need {target-score} on {remaining_balls} balls")
 
     conn.commit()
     conn.close()
@@ -759,6 +780,7 @@ def innings_change():
     global bs
     global team_name1
     global team_name2
+    global bottom_news
 
     target = score+1
     innings_no = 2
@@ -809,6 +831,10 @@ def innings_change():
 
     ic_but=CTkButton(ic_frame,text="DONE",command=innings_change2,bg_color="lightGreen",fg_color="#FF0000",hover=True,hover_color="orange",font=("Arial",25,"bold"),corner_radius=15,border_width=3,border_color="darkGreen",width=50,height=20)
     ic_but.place(x=150,y=250)
+
+    bottom_news = CTkLabel(score_f, text=f"Need {target-score} on {int(overs_lim) * 6} balls", fg_color="gray",font=("Times",18),text_color="white",corner_radius=40, width=50,height=20)
+    bottom_news.place(x=380, y=360)
+
     ic.mainloop()
 
 def innings_change2():
@@ -869,7 +895,6 @@ def innings_change2():
     ic.destroy()
 
 def over_change():
-
     global batsman_strike
     global _1_bat_name
     global _2_bat_name
@@ -2025,7 +2050,13 @@ def undo():
         conn.commit()
         conn.close()
         recent.pop(0)
+        if innings_no == 2 and BALLS>0:
+            max_overs = int(overs_lim)
+            current_overs = int(OVERS)
+            current_balls = int((OVERS - current_overs) * 10)
 
+            remaining_balls = (max_overs - current_overs) * 6 - current_balls
+            bottom_news.configure(text=f"Need {target-score} on {remaining_balls} balls")
         display()
 
     elif recent[0]=="1":
@@ -2062,7 +2093,13 @@ def undo():
         recent.pop(0)
          
         print(OVERS,score)
-    
+        if innings_no == 2 and BALLS>0:
+            max_overs = int(overs_lim)
+            current_overs = int(OVERS)
+            current_balls = int((OVERS - current_overs) * 10)
+
+            remaining_balls = (max_overs - current_overs) * 6 - current_balls
+            bottom_news.configure(text=f"Need {target-score} on {remaining_balls} balls")
         display()
 
     elif recent[0]=="2":
@@ -2092,7 +2129,13 @@ def undo():
         recent.pop(0)
 
 
+        if innings_no == 2 and BALLS>0:
+            max_overs = int(overs_lim)
+            current_overs = int(OVERS)
+            current_balls = int((OVERS - current_overs) * 10)
 
+            remaining_balls = (max_overs - current_overs) * 6 - current_balls
+            bottom_news.configure(text=f"Need {target-score} on {remaining_balls} balls")
         display()
         print(OVERS,score)
     elif recent[0]=="3":
@@ -2126,7 +2169,13 @@ def undo():
         recent.pop(0)
         
         
-        
+        if innings_no == 2 and BALLS>0:
+            max_overs = int(overs_lim)
+            current_overs = int(OVERS)
+            current_balls = int((OVERS - current_overs) * 10)
+
+            remaining_balls = (max_overs - current_overs) * 6 - current_balls
+            bottom_news.configure(text=f"Need {target-score} on {remaining_balls} balls")
         display()
 
         print(OVERS,score)
@@ -2157,6 +2206,13 @@ def undo():
         conn.close()
         recent.pop(0)
 
+        if innings_no == 2 and BALLS>0:
+            max_overs = int(overs_lim)
+            current_overs = int(OVERS)
+            current_balls = int((OVERS - current_overs) * 10)
+
+            remaining_balls = (max_overs - current_overs) * 6 - current_balls
+            bottom_news.configure(text=f"Need {target-score} on {remaining_balls} balls")
         display()
 
         print(OVERS,score)
@@ -2186,6 +2242,13 @@ def undo():
         conn.close()
         recent.pop(0)
 
+        if innings_no == 2 and BALLS>0:
+            max_overs = int(overs_lim)
+            current_overs = int(OVERS)
+            current_balls = int((OVERS - current_overs) * 10)
+
+            remaining_balls = (max_overs - current_overs) * 6 - current_balls
+            bottom_news.configure(text=f"Need {target-score} on {remaining_balls} balls")
         display()
         print(OVERS,score)
 
@@ -2240,7 +2303,13 @@ def undo():
         conn.close()
         f1.destroy()
         recent.pop(0)
+        if innings_no == 2 and BALLS>0:
+            max_overs = int(overs_lim)
+            current_overs = int(OVERS)
+            current_balls = int((OVERS - current_overs) * 10)
 
+            remaining_balls = (max_overs - current_overs) * 6 - current_balls
+            bottom_news.configure(text=f"Need {target-score} on {remaining_balls} balls")
         display()
 
     elif recent[0]=="B1":
@@ -2272,6 +2341,15 @@ def undo():
         conn.close()
 
         recent.pop(0)
+
+        if innings_no == 2 and BALLS>0:
+            max_overs = int(overs_lim)
+            current_overs = int(OVERS)
+            current_balls = int((OVERS - current_overs) * 10)
+
+            remaining_balls = (max_overs - current_overs) * 6 - current_balls
+            bottom_news.configure(text=f"Need {target-score} on {remaining_balls} balls")
+
         display()
         
 
@@ -2298,7 +2376,13 @@ def undo():
         conn.commit()
         conn.close()
         recent.pop(0)
+        if innings_no == 2 and BALLS>0:
+            max_overs = int(overs_lim)
+            current_overs = int(OVERS)
+            current_balls = int((OVERS - current_overs) * 10)
 
+            remaining_balls = (max_overs - current_overs) * 6 - current_balls
+            bottom_news.configure(text=f"Need {target-score} on {remaining_balls} balls")
         display()
 
     elif recent[0]=="B3":
@@ -2328,7 +2412,13 @@ def undo():
         conn.commit()
         conn.close()
         recent.pop(0)
+        if innings_no == 2 and BALLS>0:
+            max_overs = int(overs_lim)
+            current_overs = int(OVERS)
+            current_balls = int((OVERS - current_overs) * 10)
 
+            remaining_balls = (max_overs - current_overs) * 6 - current_balls
+            bottom_news.configure(text=f"Need {target-score} on {remaining_balls} balls")
         display()
 
     elif recent[0]=="B4":
@@ -2354,7 +2444,13 @@ def undo():
         conn.commit()
         conn.close()
         recent.pop(0)
+        if innings_no == 2 and BALLS>0:
+            max_overs = int(overs_lim)
+            current_overs = int(OVERS)
+            current_balls = int((OVERS - current_overs) * 10)
 
+            remaining_balls = (max_overs - current_overs) * 6 - current_balls
+            bottom_news.configure(text=f"Need {target-score} on {remaining_balls} balls")
         display()
 
     elif recent[0]=="W1":
@@ -2373,7 +2469,13 @@ def undo():
         conn.close()
 
         recent.pop(0)
+        if innings_no == 2 and BALLS>0:
+            max_overs = int(overs_lim)
+            current_overs = int(OVERS)
+            current_balls = int((OVERS - current_overs) * 10)
 
+            remaining_balls = (max_overs - current_overs) * 6 - current_balls
+            bottom_news.configure(text=f"Need {target-score} on {remaining_balls} balls")
         display()
         
     elif recent[0]=="W2":
@@ -2388,7 +2490,13 @@ def undo():
         conn.close()
 
         recent.pop(0)
+        if innings_no == 2 and BALLS>0:
+            max_overs = int(overs_lim)
+            current_overs = int(OVERS)
+            current_balls = int((OVERS - current_overs) * 10)
 
+            remaining_balls = (max_overs - current_overs) * 6 - current_balls
+            bottom_news.configure(text=f"Need {target-score} on {remaining_balls} balls")
         display()
 
     elif recent[0]=="W3":
@@ -2421,6 +2529,13 @@ def undo():
         conn.close()
 
         recent.pop(0)
+        if innings_no == 2 and BALLS>0:
+            max_overs = int(overs_lim)
+            current_overs = int(OVERS)
+            current_balls = int((OVERS - current_overs) * 10)
+
+            remaining_balls = (max_overs - current_overs) * 6 - current_balls
+            bottom_news.configure(text=f"Need {target-score} on {remaining_balls} balls")
         display()
       
 conn.commit()
