@@ -186,7 +186,7 @@ def table_name(name):
     if " " in name:
         location =name.index(" ")
         name = name[0:location]
-        print(name)
+        # print(name)
     return name    
     
 def begin_match():
@@ -223,7 +223,7 @@ def begin_match():
     team_a_bowling = str(team_a_cut)+ "_bowling"+match_id
     team_b_bowling = str(team_b_cut) + "_bowling"+match_id
     main = str(match_name_cut)+"_main_scorecard"+match_id
-    print(main)
+    # print(main)
 
     c.execute(f""" CREATE TABLE  IF NOT EXISTS {main}
                     (SCORE INT, OVERS INT , WICKETS INT)""")
@@ -237,7 +237,7 @@ def begin_match():
     c.execute(f""" CREATE TABLE IF NOT EXISTS  {team_b_bowling }
                     (BOWLER TEXT, OVERS REAL, RUNS INT,WICKETS INT)""")
     
-    print("Tables created successfully!!!")
+    # print("Tables created successfully!!!")
     
     global batting_side
     global bowling_side
@@ -254,15 +254,8 @@ def begin_match():
         bs=team_name2.get()
         bowling_side = team_a_bowling
     else:
-        # messagebox.showerror("ERROR","Please select a team name!")
         CTkMessagebox(title="Error", message="Please select a team name!", icon="cancel", button_color="darkGreen")
-
-    
-    print(match,team_a_batting,team_b_batting)
-    
-       
-
-
+    # print(match,team_a_batting,team_b_batting)
     conn.commit()
     conn.close()
 
@@ -297,13 +290,13 @@ def next_screen():
     _2_bat_name = str(bat_2_name.get())
     bowler_present = bowler_name.get()
     overs_lim = match_format_var.get()
-    print(overs_lim)
+    # print(overs_lim)
 
     
-    print(_1_bat_name)
-    print(_2_bat_name)
+    # print(_1_bat_name)
+    # print(_2_bat_name)
 
-    extras =0
+    extras = 0
     all_bowlers = set()
     current_batsmen_score = dict()
     current_batsmen_balls = dict()
@@ -323,8 +316,8 @@ def next_screen():
     current_bowler_wickets[bowler_present]=0
     
 
-    batsman_strike =str(bat_1_name.get())
-    print(batsman_strike)
+    batsman_strike = str(bat_1_name.get())
+    # print(batsman_strike)
     
     batter_name(str(bat_1_name.get()),str(bat_2_name.get()),batting_side)
     bowler_name_func(str(bowler_name.get()),bowling_side)
@@ -621,7 +614,7 @@ def summary():
     c=conn.cursor()
     c.execute(f"SELECT * FROM {batting_side}")
     a=c.fetchall()
-    print(a)
+    # print(a)
     for i in a:
         tree.insert(parent="",index=END,values=i)
     conn.commit()
@@ -656,7 +649,7 @@ def summary():
     c=conn.cursor()
     c.execute(f"SELECT * FROM {bowling_side}")
     a=c.fetchall()
-    print(a)
+    # print(a)
     for i in a:
         tree2.insert(parent="",index=END,values=i)
     conn.commit()
@@ -754,7 +747,7 @@ def new_bowler():
         current_bowler_wickets[bowler_present]=0
         all_bowlers.add(bowler_present)
         bowler_name_func(bowler_present,bowling_side)
-    print(bowler_present,"is bowling now")
+    # print(bowler_present,"is bowling now")
     o.destroy()
     display()
 
@@ -849,12 +842,12 @@ def innings_change2():
     global batsman_strike
     global current_batsmen_balls,current_batsmen_score,current_bowler_balls,current_bowler_score,current_bowler_wickets
     global all_bowlers
-    print(b1e.get(),"HELLOOOO")
+    # print(b1e.get(),"HELLOOOO")
     _1_bat_name = str(b1e.get())
     batsman_strike = _1_bat_name
     _2_bat_name = str(b2e.get())
     bowler_present = bwe.get()
-    print(_1_bat_name, " is the new batter for second innings")
+    # print(_1_bat_name, " is the new batter for second innings")
     conn=sqlite3.connect("score.db")
     c=conn.cursor()
     c.execute(f"""UPDATE {main} SET SCORE=0,WICKETS=0,OVERS=0""")
@@ -888,8 +881,8 @@ def innings_change2():
     current_bowler_score[bowler_present]=0
     current_bowler_balls[bowler_present]=0
     current_bowler_wickets[bowler_present]=0
-    print(current_batsmen_score)
-    print(str(_1_bat_name))
+    # print(current_batsmen_score)
+    # print(str(_1_bat_name))
 
     display()
     ic.destroy()
@@ -910,8 +903,8 @@ def over_change():
     global BALLS
     global overs_lim
     global innings_no
-    print(recent)
-    if innings_no ==1:
+    # print(recent)
+    if innings_no == 1:
         if OVERS == int(overs_lim):
             
             innings_change()
@@ -943,13 +936,13 @@ def over_change():
     n_lab=CTkLabel(o_frame,text="Enter new bowler name",fg_color="darkGreen",corner_radius=3,text_color="white",font=("Times",30))
     n_lab.place(x=80,y=100)
 
-    ov=customtkinter.CTkComboBox(o_frame, dropdown_fg_color="white",dropdown_text_color="green",dropdown_font=("Arial",15),dropdown_hover_color="darkGreen",width=270,height=30,border_width=2,button_color="green",border_color="green",button_hover_color="darkGreen")
+    ov=customtkinter.CTkComboBox(o_frame, dropdown_fg_color="white", dropdown_text_color="green", dropdown_font=("Arial",15),dropdown_hover_color="darkGreen", width=270, height=30, border_width=2, button_color="green", border_color="green", button_hover_color="darkGreen")
     ov.place(x=80,y=150)
     options = tuple(all_bowlers)
     ov.configure(values=(options))
 
 
-    ov_but=CTkButton(o_frame,text="OK",command=new_bowler,bg_color="lightGreen",fg_color="#FF0000",hover=True,hover_color="orange",font=("Arial",25,"bold"),corner_radius=15,border_width=3,border_color="darkGreen",width=50,height=20)
+    ov_but=CTkButton(o_frame, text="OK", command=new_bowler, bg_color="lightGreen", fg_color="#FF0000", hover=True, hover_color="orange", font=("Arial",25,"bold"), corner_radius=15, border_width=3, border_color="darkGreen", width=50, height=20)
     ov_but.place(x=230,y=200)
     o.mainloop()
 
@@ -968,9 +961,9 @@ def new_batsman():
     global dismissed
     global new_batter
     w = Tk()
-    ovget =StringVar(w)
+    ovget = StringVar(w)
     
-    print(batsman_strike)
+    # print(batsman_strike)
     w.geometry("500x300+150+100")
     w.title("New Batsman")
     w.resizable(False, False)
@@ -1001,7 +994,7 @@ def new_batter():
     c=conn.cursor()
     if dismissed==_1_bat_name:
         _1_bat_name = ovget.get()
-        print(_1_bat_name,"has arrived to the crease")
+        # print(_1_bat_name,"has arrived to the crease")
         batsman_strike = ovget.get()
         current_batsmen_score[_1_bat_name]=0
         current_batsmen_balls[_1_bat_name]=0
@@ -1009,7 +1002,7 @@ def new_batter():
         c.execute(f"""INSERT INTO {batting_side} VALUES('{_1_bat_name}',0,0,0)""")
     elif dismissed==_2_bat_name:
         _2_bat_name = str(ovget.get())
-        print(_2_bat_name,"has arrived to the crease")
+        # print(_2_bat_name,"has arrived to the crease")
         batsman_strike = ovget.get()
         current_batsmen_score[_2_bat_name]=0
         current_batsmen_balls[_2_bat_name]=0
@@ -1074,7 +1067,7 @@ def dot():
 
     recent.pop()
     recent.insert(0,'DOT')
-    print(recent)
+    # print(recent)
     BALLS+=1
     X= BALLS//6
     Y=(BALLS%6)/10
@@ -1092,7 +1085,7 @@ def dot():
     c.execute(f"""UPDATE {bowling_side} SET OVERS={a+b},RUNS ={current_bowler_score[bowler_present]},WICKETS ={current_bowler_wickets[bowler_present]} WHERE BOWLER = '{bowler_present}'""")
     
     
-    print(OVERS,score)
+    # print(OVERS,score)
     conn.commit()
     conn.close()
     display()
@@ -1135,7 +1128,7 @@ def one():
     current_bowler_balls[bowler_present]+=1
     a = current_bowler_balls[bowler_present]//6
     b= (current_bowler_balls[bowler_present]%6)/10
-    print(batsman_strike," score is ",current_batsmen_score[batsman_strike],"on",current_batsmen_balls[batsman_strike])
+    # print(batsman_strike," score is ",current_batsmen_score[batsman_strike],"on",current_batsmen_balls[batsman_strike])
 
     conn = sqlite3.connect('score.db')
     c=conn.cursor()
@@ -1162,7 +1155,7 @@ def one():
 
     if innings_no==2 and (score>=target or wickets==10):
         return match_finish()
-    print(OVERS,score)
+    # print(OVERS,score)
     if OVERS%1==0 and OVERS!=0.0:
         over_change()   
 
@@ -1199,7 +1192,7 @@ def two():
     current_bowler_balls[bowler_present]+=1
     a = current_bowler_balls[bowler_present]//6
     b= (current_bowler_balls[bowler_present]%6)/10
-    print(batsman_strike,"batsman score is ",current_batsmen_score[batsman_strike])
+    # print(batsman_strike,"batsman score is ",current_batsmen_score[batsman_strike])
 
     conn = sqlite3.connect('score.db')
     c=conn.cursor()    
@@ -1210,7 +1203,7 @@ def two():
     conn.close()
     
     
-    print(OVERS,score)
+    # print(OVERS,score)
 
     if batsman_strike==_1_bat_name:
         bats1_lab.configure(text=f"{_1_bat_name}*")
@@ -1262,7 +1255,7 @@ def three():
     r=current_batsmen_score[batsman_strike]
     d =current_batsmen_balls[batsman_strike]
     sr = (r/d)*100
-    print(batsman_strike,"batsman score is ",current_batsmen_score[batsman_strike])
+    # print(batsman_strike,"batsman score is ",current_batsmen_score[batsman_strike])
     conn = sqlite3.connect('score.db')
     c=conn.cursor()
     c.execute(f"""UPDATE {batting_side} SET RUNS={r},BALLS={d},STRIKE_RATE ={sr} WHERE BATSMAN = '{batsman_strike}' """)
@@ -1291,7 +1284,7 @@ def three():
         return match_finish()
     if OVERS%1==0 and OVERS!=0.0:
         over_change()
-    print(OVERS,score)
+    # print(OVERS,score)
 
 
 def four():
@@ -1324,7 +1317,7 @@ def four():
     current_batsmen_balls[batsman_strike]+=1
     a = current_bowler_balls[bowler_present]//6
     b= (current_bowler_balls[bowler_present]%6)/10
-    print(batsman_strike,"batsman score is ",current_batsmen_score[batsman_strike])
+    # print(batsman_strike,"batsman score is ",current_batsmen_score[batsman_strike])
     conn = sqlite3.connect('score.db')
     c=conn.cursor()
     c.execute(f"""UPDATE {main} SET OVERS={OVERS},SCORE={score},WICKETS={wickets}""")
@@ -1350,7 +1343,7 @@ def four():
 
     if OVERS%1==0 and OVERS!=0.0:
            over_change()
-    print(OVERS,score)
+    # print(OVERS,score)
 
 
 def six():
@@ -1385,7 +1378,7 @@ def six():
     current_batsmen_balls[batsman_strike]+=1
     a = current_bowler_balls[bowler_present]//6
     b= (current_bowler_balls[bowler_present]%6)/10
-    print(batsman_strike,"batsman score is ",current_batsmen_score[batsman_strike])
+    # print(batsman_strike,"batsman score is ",current_batsmen_score[batsman_strike])
     conn = sqlite3.connect('score.db')
     c=conn.cursor()
     c.execute(f"""UPDATE {main} SET OVERS={OVERS},SCORE={score},WICKETS={wickets}""")
@@ -1400,7 +1393,7 @@ def six():
         return match_finish()
     if OVERS%1==0 and OVERS!=0.0:
            over_change()
-    print(OVERS,score)
+    # print(OVERS,score)
 
 def wd():
     global score
@@ -1469,8 +1462,7 @@ def nb():
     if innings_no==2 and (score>=target or wickets==10):
         return match_finish()
     freehit()
-    print(OVERS,score)
-
+    # print(OVERS,score)
 
 def bind():
     f1.destroy()
@@ -1576,7 +1568,7 @@ def out():
     
     if innings_no==2 and (score>=target or wickets==10):
         return match_finish()
-    print(batsman_strike,"has been dismissed!!")
+    # print(batsman_strike,"has been dismissed!!")
     new_batsman()
     
 
@@ -1621,7 +1613,7 @@ def run_out2():
     runs_run_out =ask2.get()
     recent.pop()
     recent.insert(0,f'RO({runs_run_out})')
-    print("but runs scored on this ball were",runs_run_out)
+    # print("but runs scored on this ball were",runs_run_out)
     if runs_run_out =="1":
         wickets+=1
         one()
@@ -1703,9 +1695,7 @@ def run_out2():
     c.execute(f"""UPDATE {bowling_side} SET WICKETS ={current_bowler_wickets[bowler_present]} WHERE BOWLER = '{bowler_present}'""")
     conn.commit()
     conn.close()
-    # current_batsmen_score.pop(dismissed)
-    # current_batsmen_balls.pop(dismissed)
-    print(dismissed,"has been dismissed!")
+    # print(dismissed,"has been dismissed!")
     new_batsman()
 def byes_1_f():
     global score
@@ -1751,7 +1741,7 @@ def byes_1_f():
         return match_finish()
     if OVERS%1==0 and OVERS!=0.0:
            over_change()
-    print(OVERS,score)
+    # print(OVERS,score)
 
 def byes_2_f():
     global score
@@ -1793,7 +1783,7 @@ def byes_2_f():
         return match_finish()
     if OVERS%1==0 and OVERS!=0.0:
            over_change()
-    print(OVERS,score)
+    # print(OVERS,score)
     
 def byes_3_f():
     global score
@@ -1841,7 +1831,7 @@ def byes_3_f():
         return match_finish()
     if OVERS%1==0 and OVERS!=0.0:
            over_change()
-    print(OVERS,score)
+    # print(OVERS,score)
 
 def byes_4_f():
     global score
@@ -1885,7 +1875,7 @@ def byes_4_f():
         return match_finish()
     if OVERS%1==0 and OVERS!=0.0:
            over_change()
-    print(OVERS,score)
+    # print(OVERS,score)
     
 def wide_1():
     global score
@@ -2057,6 +2047,8 @@ def undo():
 
             remaining_balls = (max_overs - current_overs) * 6 - current_balls
             bottom_news.configure(text=f"Need {target-score} on {remaining_balls} balls")
+        else:
+            bottom_news.configure(text=f"Need {target-score} on {int(overs_lim) * 6} balls")
         display()
 
     elif recent[0]=="1":
@@ -2077,7 +2069,7 @@ def undo():
         a=current_bowler_balls[bowler_present]//6
         b=(current_bowler_balls[bowler_present]%6)/10
 
-        print(batsman_strike," score is ",current_batsmen_score[batsman_strike],"on",current_batsmen_balls[batsman_strike])
+        # print(batsman_strike," score is ",current_batsmen_score[batsman_strike],"on",current_batsmen_balls[batsman_strike])
         conn = sqlite3.connect('score.db')
         c=conn.cursor()    
         c.execute(f"""UPDATE {main} SET OVERS={OVERS},SCORE={score},WICKETS={wickets}""")
@@ -2092,7 +2084,7 @@ def undo():
         conn.close()
         recent.pop(0)
          
-        print(OVERS,score)
+        # print(OVERS,score)
         if innings_no == 2 and BALLS>0:
             max_overs = int(overs_lim)
             current_overs = int(OVERS)
@@ -2100,6 +2092,8 @@ def undo():
 
             remaining_balls = (max_overs - current_overs) * 6 - current_balls
             bottom_news.configure(text=f"Need {target-score} on {remaining_balls} balls")
+        else:
+            bottom_news.configure(text=f"Need {target-score} on {int(overs_lim) * 6} balls")
         display()
 
     elif recent[0]=="2":
@@ -2114,7 +2108,7 @@ def undo():
         current_bowler_balls[bowler_present]-=1
         a=current_bowler_balls[bowler_present]//6
         b=(current_bowler_balls[bowler_present]%6)/10
-        print(batsman_strike," score is ",current_batsmen_score[batsman_strike],"on",current_batsmen_balls[batsman_strike])
+        # print(batsman_strike," score is ",current_batsmen_score[batsman_strike],"on",current_batsmen_balls[batsman_strike])
         
         conn = sqlite3.connect('score.db')
         c=conn.cursor()    
@@ -2136,8 +2130,10 @@ def undo():
 
             remaining_balls = (max_overs - current_overs) * 6 - current_balls
             bottom_news.configure(text=f"Need {target-score} on {remaining_balls} balls")
+        else:
+            bottom_news.configure(text=f"Need {target-score} on {int(overs_lim) * 6} balls")
         display()
-        print(OVERS,score)
+        # print(OVERS,score)
     elif recent[0]=="3":
         score=score-3
         BALLS-=1
@@ -2155,7 +2151,7 @@ def undo():
         current_bowler_balls[bowler_present]-=1
         a=current_bowler_balls[bowler_present]//6
         b=(current_bowler_balls[bowler_present]%6)/10
-        print(batsman_strike," score is ",current_batsmen_score[batsman_strike],"on",current_batsmen_balls[batsman_strike])
+        # print(batsman_strike," score is ",current_batsmen_score[batsman_strike],"on",current_batsmen_balls[batsman_strike])
         conn = sqlite3.connect('score.db')
         c=conn.cursor()    
         c.execute(f"""UPDATE {main} SET OVERS={OVERS},SCORE={score},WICKETS={wickets}""")
@@ -2176,9 +2172,11 @@ def undo():
 
             remaining_balls = (max_overs - current_overs) * 6 - current_balls
             bottom_news.configure(text=f"Need {target-score} on {remaining_balls} balls")
+        else:
+            bottom_news.configure(text=f"Need {target-score} on {int(overs_lim) * 6} balls")
         display()
 
-        print(OVERS,score)
+        # print(OVERS,score)
 
     elif recent[0]=="4":
         score=score-4
@@ -2192,7 +2190,7 @@ def undo():
         current_bowler_balls[bowler_present]-=1
         a=current_bowler_balls[bowler_present]//6
         b=(current_bowler_balls[bowler_present]%6)/10
-        print(batsman_strike," score is ",current_batsmen_score[batsman_strike],"on",current_batsmen_balls[batsman_strike])
+        # print(batsman_strike," score is ",current_batsmen_score[batsman_strike],"on",current_batsmen_balls[batsman_strike])
         
         conn = sqlite3.connect('score.db')
         c=conn.cursor()    
@@ -2213,9 +2211,11 @@ def undo():
 
             remaining_balls = (max_overs - current_overs) * 6 - current_balls
             bottom_news.configure(text=f"Need {target-score} on {remaining_balls} balls")
+        else:
+            bottom_news.configure(text=f"Need {target-score} on {int(overs_lim) * 6} balls")
         display()
 
-        print(OVERS,score)
+        # print(OVERS,score)
     elif recent[0]=="6":
         score=score-6
         BALLS-=1
@@ -2228,7 +2228,7 @@ def undo():
         current_bowler_balls[bowler_present]-=1
         a=current_bowler_balls[bowler_present]//6
         b=(current_bowler_balls[bowler_present]%6)/10
-        print(batsman_strike," score is ",current_batsmen_score[batsman_strike],"on",current_batsmen_balls[batsman_strike])
+        # print(batsman_strike," score is ",current_batsmen_score[batsman_strike],"on",current_batsmen_balls[batsman_strike])
         
         conn = sqlite3.connect('score.db')
         c=conn.cursor()    
@@ -2249,8 +2249,10 @@ def undo():
 
             remaining_balls = (max_overs - current_overs) * 6 - current_balls
             bottom_news.configure(text=f"Need {target-score} on {remaining_balls} balls")
+        else:
+            bottom_news.configure(text=f"Need {target-score} on {int(overs_lim) * 6} balls")
         display()
-        print(OVERS,score)
+        # print(OVERS,score)
 
     elif recent[0]=="WD":
         current_bowler_score[bowler_present]-=1
@@ -2272,9 +2274,16 @@ def undo():
         conn.commit()
         conn.close()
         recent.pop(0)
+        if innings_no == 2 and BALLS>0:
+            max_overs = int(overs_lim)
+            current_overs = int(OVERS)
+            current_balls = int((OVERS - current_overs) * 10)
 
+            remaining_balls = (max_overs - current_overs) * 6 - current_balls
+            bottom_news.configure(text=f"Need {target-score} on {remaining_balls} balls")
+        else:
+            bottom_news.configure(text=f"Need {target-score} on {int(overs_lim) * 6} balls")
         display()
-
 
     elif recent[0]=="OUT":
         CTkMessagebox(title="Error", message="UNDO function can not work on 'OUT'", icon="cancel", button_color="darkGreen")
@@ -2310,6 +2319,8 @@ def undo():
 
             remaining_balls = (max_overs - current_overs) * 6 - current_balls
             bottom_news.configure(text=f"Need {target-score} on {remaining_balls} balls")
+        else:
+            bottom_news.configure(text=f"Need {target-score} on {int(overs_lim) * 6} balls")
         display()
 
     elif recent[0]=="B1":
@@ -2349,6 +2360,8 @@ def undo():
 
             remaining_balls = (max_overs - current_overs) * 6 - current_balls
             bottom_news.configure(text=f"Need {target-score} on {remaining_balls} balls")
+        else:
+            bottom_news.configure(text=f"Need {target-score} on {int(overs_lim) * 6} balls")
 
         display()
         
@@ -2383,6 +2396,8 @@ def undo():
 
             remaining_balls = (max_overs - current_overs) * 6 - current_balls
             bottom_news.configure(text=f"Need {target-score} on {remaining_balls} balls")
+        else:
+            bottom_news.configure(text=f"Need {target-score} on {int(overs_lim) * 6} balls")
         display()
 
     elif recent[0]=="B3":
@@ -2419,6 +2434,8 @@ def undo():
 
             remaining_balls = (max_overs - current_overs) * 6 - current_balls
             bottom_news.configure(text=f"Need {target-score} on {remaining_balls} balls")
+        else:
+            bottom_news.configure(text=f"Need {target-score} on {int(overs_lim) * 6} balls")
         display()
 
     elif recent[0]=="B4":
@@ -2451,6 +2468,8 @@ def undo():
 
             remaining_balls = (max_overs - current_overs) * 6 - current_balls
             bottom_news.configure(text=f"Need {target-score} on {remaining_balls} balls")
+        else:
+            bottom_news.configure(text=f"Need {target-score} on {int(overs_lim) * 6} balls")
         display()
 
     elif recent[0]=="W1":
@@ -2476,6 +2495,8 @@ def undo():
 
             remaining_balls = (max_overs - current_overs) * 6 - current_balls
             bottom_news.configure(text=f"Need {target-score} on {remaining_balls} balls")
+        else:
+            bottom_news.configure(text=f"Need {target-score} on {int(overs_lim) * 6} balls")
         display()
         
     elif recent[0]=="W2":
@@ -2497,6 +2518,8 @@ def undo():
 
             remaining_balls = (max_overs - current_overs) * 6 - current_balls
             bottom_news.configure(text=f"Need {target-score} on {remaining_balls} balls")
+        else:
+            bottom_news.configure(text=f"Need {target-score} on {int(overs_lim) * 6} balls")
         display()
 
     elif recent[0]=="W3":
@@ -2514,7 +2537,15 @@ def undo():
         else:
             batsman_strike =_1_bat_name
         recent.pop(0)
+        if innings_no == 2 and BALLS>0:
+            max_overs = int(overs_lim)
+            current_overs = int(OVERS)
+            current_balls = int((OVERS - current_overs) * 10)
 
+            remaining_balls = (max_overs - current_overs) * 6 - current_balls
+            bottom_news.configure(text=f"Need {target-score} on {remaining_balls} balls")
+        else:
+            bottom_news.configure(text=f"Need {target-score} on {int(overs_lim) * 6} balls")
         display()
 
     elif recent[0]=="W4":
@@ -2536,6 +2567,8 @@ def undo():
 
             remaining_balls = (max_overs - current_overs) * 6 - current_balls
             bottom_news.configure(text=f"Need {target-score} on {remaining_balls} balls")
+        else:
+            bottom_news.configure(text=f"Need {target-score} on {int(overs_lim) * 6} balls")
         display()
       
 conn.commit()
