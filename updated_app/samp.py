@@ -1,8 +1,9 @@
 import sqlite3
-from reportlab.pdfgen import canvas
+from reportlab.lib import colors
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph
+from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.pagesizes import letter
 import customtkinter
-from CTkTable import *
 from tkinter import *
 from tkinter import ttk
 from CTkMessagebox import CTkMessagebox
@@ -120,7 +121,6 @@ warning_font=CTkFont(
     weight="bold",
     slant="italic"
     )
-# opt_label=CTkLabel(f3,text="Press ENTER before selecting batting team",text_color="red",corner_radius=5,font=warning_font).place(x=280,y=115)
 opt = customtkinter.CTkComboBox(f3,dropdown_fg_color="white",values=['Select batting Team'],dropdown_text_color="green",dropdown_font=("Arial",15),dropdown_hover_color="darkGreen",width=270,height=30,border_width=2,button_color="green",border_color="green",button_hover_color="darkGreen",command=toss)
 opt.place(x=350,y=160)
 
@@ -197,6 +197,7 @@ def begin_match():
     global team_a
     global team_b
     global match_id
+    global match_name_cut
 
     conn = sqlite3.connect('score.db')
     c=conn.cursor()
@@ -207,12 +208,17 @@ def begin_match():
     team_b = team_name2.get()
     team_b_cut = table_name(team_b)
 
-
+    c.execute(f"""CREATE TABLE IF NOT EXISTS match_id (ID INT)""")
+    id=c.execute("SELECT ID FROM match_id").fetchall()
     rand=[]
-    match_id= str(randint(1,1000))
+    for i in id:
+        for j in i:
+            rand.append(j)
+    match_id=str(randint(1,1000))
     while match_id in rand:
         match_id= str(randint(1,1000))
-    rand.append(match_id)
+    c.execute(f"INSERT INTO match_id VALUES({match_id})")
+
     global team_a_batting
     global team_b_batting
     global team_a_bowling
@@ -326,7 +332,7 @@ def next_screen():
     h.geometry("1400x800")
     h.title("Cricket Scoring App")
     h.resizable(False, False)
-    CTkMessagebox(master=h, title="Cricket Scoring App", message="MATCH HAS STARTED", icon="info", button_color="darkGreen")
+    CTkMessagebox(master=h, title="Cricket Scoring App", message="Match has started!", icon="info", button_color="darkGreen")
 
     back_img=Image.open("back.jpg")
     bck_img=CTkImage(light_image=back_img,size=(1400,800))
@@ -359,6 +365,12 @@ def next_screen():
     dot_b=CTkButton(new,text="DOT",command=dot,fg_color="#FF0000",hover=True,hover_color="orange",font=("Arial",15,"bold"),corner_radius=15,border_width=3,border_color="darkGreen",width=30,height=20)
     dot_b.place(x=30,y=40)
     
+    global one_b
+    global two_b
+    global three_b
+    global four_b
+    global six_b
+
     one_b=CTkButton(new,text="1",command =one,width=50,height=20,fg_color="#FF0000",hover=True,hover_color="orange",font=("Arial",15,"bold"),corner_radius=15,border_width=3,border_color="darkGreen")
     one_b.place(x=115,y=40)
 
@@ -374,16 +386,21 @@ def next_screen():
     six_b=CTkButton(new,text="6",command =six,fg_color="#FF0000",hover=True,hover_color="orange",font=("Arial",15,"bold"),corner_radius=15,border_width=3,border_color="darkGreen",width=50,height=20)
     six_b.place(x=185,y=80)
     
+    global wd_b
+    global out_b
+    global byes_1
+    global byes_2
+    global byes_3
+    global byes_4
+
     wd_b=CTkButton(new,text="WD",command=wd,fg_color="#FF0000",hover=True,hover_color="orange",font=("Arial",15,"bold"),corner_radius=15,border_width=3,border_color="darkGreen",width=50,height=20)
     wd_b.place(x=30,y=80)
 
     out_b=CTkButton(new,text="OUT",command=out,fg_color="#FF0000",hover=True,hover_color="orange",font=("Arial",15,"bold"),corner_radius=15,border_width=3,border_color="darkGreen",width=50,height=20)
     out_b.place(x=255,y=80)   
 
-
     byes_1=CTkButton(new,text="B1",command=byes_1_f,fg_color="#FF0000",hover=True,hover_color="orange",font=("Arial",15,"bold"),corner_radius=15,border_width=3,border_color="darkGreen",width=50,height=20)
     byes_1.place(x=30,y=120)
-
 
     byes_2=CTkButton(new,text="B2",command=byes_2_f,fg_color="#FF0000",hover=True,hover_color="orange",font=("Arial",15,"bold"),corner_radius=15,border_width=3,border_color="darkGreen",width=50,height=20)
     byes_2.place(x=115,y=120)
@@ -393,6 +410,12 @@ def next_screen():
 
     byes_4=CTkButton(new,text="B4",command=byes_4_f,fg_color="#FF0000",hover=True,hover_color="orange",font=("Arial",15,"bold"),corner_radius=15,border_width=3,border_color="darkGreen",width=50,height=20)
     byes_4.place(x=255,y=120)
+
+    global byes_wide_1
+    global byes_wide_2
+    global byes_wide_3
+    global byes_wide_4
+    global runout_b
 
     byes_wide_1=CTkButton(new,text="WD-BYE1",command=wide_1,fg_color="#FF0000",hover=True,hover_color="orange",font=("Arial",15,"bold"),corner_radius=15,border_width=3,border_color="darkGreen",width=30,height=20)
     byes_wide_1.place(x=50,y=160)
@@ -414,6 +437,11 @@ def next_screen():
 
     undo_b=CTkButton(new,text="UNDO",command=undo,fg_color="#FF0000",hover=True,hover_color="orange",font=("Arial",15,"bold"),corner_radius=15,border_width=3,border_color="darkGreen",width=30,height=20)
     undo_b.place(x=260,y=270)
+
+    global next_over_b
+    next_over_b=CTkButton(new,text="NEXT OVER",command=over_change,fg_color="#FF0000",hover=True,hover_color="orange",font=("Arial",15,"bold"),corner_radius=15,border_width=3,border_color="darkGreen",width=30,height=20)
+    next_over_b.place(x=20, y=275)
+    next_over_b.place_forget()
 
     global score_f
     score_f=CTkFrame(h,corner_radius=0,width=800,height=450,fg_color="#E5FFCC",border_width=5,border_color="darkGreen")
@@ -511,7 +539,7 @@ def next_screen():
     bowler_info=CTkLabel(score_f,text=(bo,"(",br,"/",bw,")"),width=70,fg_color="white",font=("Times",23),text_color="darkGreen")
     bowler_info.place(x=650,y=185)
 
-    record_lab=CTkLabel(score_f,text="OVER RECORD",fg_color="darkGreen",font=("Times",25),text_color="white",corner_radius=40)
+    record_lab=CTkLabel(score_f,text="RECENT BALLS RECORD",fg_color="darkGreen",font=("Times",25),text_color="white",corner_radius=40)
     record_lab.place(x=350,y=235)
 
     record1_lab=CTkLabel(score_f,text=" ",fg_color=None,font=("Times",18),text_color="darkGreen",corner_radius=40)
@@ -547,37 +575,102 @@ def create_pdf(team_a_bat_table, team_b_bowl_table, team_b_bat_table, team_a_bow
     team_b_bat_data = extract_data_from_db(team_b_bat_table)
     team_a_bowl_data = extract_data_from_db(team_a_bowl_table)
 
-    pdf = canvas.Canvas(filename, pagesize=letter)
-    pdf.setFont("Helvetica", 12)
-    pdf.setFillColorRGB(1, 1, 1) # making font color white
+    # pdf = canvas.Canvas(filename, pagesize=letter)
+    # pdf.setFont("Helvetica-Bold", 12)
+    # pdf.setFillColorRGB(1, 1, 0) # making font color white
 
-    pdf.drawImage("pdf_back.png", 0, 0, width=letter[0], height=letter[1], preserveAspectRatio=True)
+    # pdf.drawImage("pdf_back.png", 0, 0, width=letter[0], height=letter[1], preserveAspectRatio=True)
 
-    pdf.drawString(100, 750, f"{team_a} Batting")
-    y_position = 730
-    for i in team_a_bat_data:
-        pdf.drawString(100, y_position, f"Batsman: {i[0]}, Runs: {i[1]}, Balls: {i[2]}, Strike Rate: {i[3]}")
-        y_position -= 20
+    # pdf.drawString(100, 750, f"{team_a} Batting (1st Innings)")
+    # pdf.setFont("Helvetica", 12)
+    # pdf.setFillColorRGB(1, 1, 1)
+    # y_position = 730
+    # for i in team_a_bat_data:
+    #     pdf.drawString(100, y_position, f"Batsman: {i[0]}, Runs: {i[1]}, Balls: {i[2]}, Strike Rate: {i[3]:.2f}")
+    #     y_position -= 20
 
-    pdf.drawString(100, y_position - 40, f"{team_b} Bowling")
-    y_position -= 60
-    for i in team_b_bowl_data:
-        pdf.drawString(100, y_position, f"Bowler: {i[0]}, Overs: {i[1]}, Runs: {i[2]}, Wickets: {i[3]}")
-        y_position -= 20
+    # pdf.setFillColorRGB(0, 0, 1)
+    # pdf.setFont("Helvetica-Bold", 12)
+    # pdf.drawString(100, y_position - 40, f"{team_b} Bowling (1st Innings)")
+    # pdf.setFont("Helvetica", 12)
+    # pdf.setFillColorRGB(1, 1, 1)
+    # y_position -= 60
+    # for i in team_b_bowl_data:
+    #     pdf.drawString(100, y_position, f"Bowler: {i[0]}, Overs: {i[1]}, Runs: {i[2]}, Wickets: {i[3]}")
+    #     y_position -= 20
+    # pdf.setFont("Helvetica-Bold", 12)
+    # pdf.drawString(100, y_position, f"Total Score: {first_inning_score}, Total Overs: {first_inning_over}, Total Wickets: {first_inning_wicket}")
+    
 
-    pdf.drawString(100, y_position - 100, f"{team_b} Batting")
-    y_position -= 120
-    for i in team_b_bat_data:
-        pdf.drawString(100, y_position, f"Batsman: {i[0]}, Runs: {i[1]}, Balls: {i[2]}, Strike Rate: {i[3]}")
-        y_position -= 20
+    # pdf.setFillColorRGB(0, 1, 0)
+    # pdf.drawString(100, y_position - 100, f"{team_b} Batting (2nd Innings)")
+    # pdf.setFont("Helvetica", 12)
+    # pdf.setFillColorRGB(1, 1, 1)
+    # y_position -= 120
+    # for i in team_b_bat_data:
+    #     pdf.drawString(100, y_position, f"Batsman: {i[0]}, Runs: {i[1]}, Balls: {i[2]}, Strike Rate: {i[3]:.2f}")
+    #     y_position -= 20
 
-    pdf.drawString(100, y_position - 40, f"{team_a} Bowling")
-    y_position -= 60
-    for i in team_a_bowl_data:
-        pdf.drawString(100, y_position, f"Bowler: {i[0]}, Overs: {i[1]}, Runs: {i[2]}, Wickets: {i[3]}")
-        y_position -= 20
+    # pdf.setFillColorRGB(0.5, 0, 0.5)
+    # pdf.setFont("Helvetica-Bold", 12)
+    # pdf.drawString(100, y_position - 40, f"{team_a} Bowling (2nd Innings)")
+    # pdf.setFont("Helvetica", 12)
+    # pdf.setFillColorRGB(1, 1, 1)
+    # y_position -= 60
+    # for i in team_a_bowl_data:
+    #     pdf.drawString(100, y_position, f"Bowler: {i[0]}, Overs: {i[1]}, Runs: {i[2]}, Wickets: {i[3]}")
+    #     y_position -= 20
+    # pdf.setFont("Helvetica-Bold", 12)
+    # pdf.drawString(100, y_position, f"Total Score: {score}, Total Overs: {OVERS}, Total Wickets: {wickets}")
 
-    pdf.save()
+    # if winner != "DRAWN":
+    #     pdf.drawString(100, y_position - 20, f"{winner} win the match!")
+    # else:
+    #     pdf.drawString(100, y_position - 20, f"Match ended in a DRAW!")
+
+    # pdf.save()
+    pdf = SimpleDocTemplate(filename, pagesize=letter)
+    styles = getSampleStyleSheet()
+
+    stats = []
+    stats.append(Paragraph("Cricket Match Report", styles['Heading1']))
+
+    stats.append(Paragraph(f"{team_a} Batting (1st Innings)", styles['Heading2']))
+    team_a_bat_table = Table(data=[["Batsman", "Runs", "Balls", "Strike Rate"]] + team_a_bat_data, style=[('BACKGROUND', (0, 0), (-1, 0), colors.grey), ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke), ('ALIGN', (0, 0), (-1, -1), 'CENTER'), ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold')])
+    stats.append(team_a_bat_table)
+    stats.append(Paragraph("", styles['Normal'])) # space is added to add to the aesthetic, no specific reason
+
+    stats.append(Paragraph(f"{team_b} Bowling (1st Innings)", styles['Heading2']))
+    team_b_bowl_table = Table(data=[["Bowler", "Overs", "Runs", "Wickets"]] + team_b_bowl_data, style=[('BACKGROUND', (0, 0), (-1, 0), colors.grey), ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke), ('ALIGN', (0, 0), (-1, -1), 'CENTER'), ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold')])
+    stats.append(team_b_bowl_table)
+    stats.append(Paragraph("", styles['Normal']))
+
+    stats.append(Paragraph("1st Innings Summary", styles['Heading2']))
+    summary_table = Table(data=[["Total Score", "Total Overs", "Total Wickets"], [first_inning_score, first_inning_over, first_inning_wicket]], style=[('ALIGN', (0, 0), (-1, -1), 'CENTER')])
+    stats.append(summary_table)
+    stats.append(Paragraph("", styles['Normal']))
+
+    stats.append(Paragraph(f"{team_b} Batting (2nd Innings)", styles['Heading2']))
+    team_b_bat_table = Table(data=[["Batsman", "Runs", "Balls", "Strike Rate"]] + team_b_bat_data, style=[('BACKGROUND', (0, 0), (-1, 0), colors.grey), ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke), ('ALIGN', (0, 0), (-1, -1), 'CENTER'), ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold')])
+    stats.append(team_b_bat_table)
+    stats.append(Paragraph("", styles['Normal']))
+
+    stats.append(Paragraph(f"{team_a} Bowling (2nd Innings)", styles['Heading2']))
+    team_a_bowl_table = Table(data=[["Bowler", "Overs", "Runs", "Wickets"]] + team_a_bowl_data, style=[('BACKGROUND', (0, 0), (-1, 0), colors.grey), ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke), ('ALIGN', (0, 0), (-1, -1), 'CENTER'), ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold')])
+    stats.append(team_a_bowl_table)
+    stats.append(Paragraph("", styles['Normal']))
+
+    stats.append(Paragraph("2nd Innings Summary", styles['Heading2']))
+    summary_table = Table(data=[["Total Score", "Total Overs", "Total Wickets"], [score, OVERS, wickets]], style=[('ALIGN', (0, 0), (-1, -1), 'CENTER')])
+    stats.append(summary_table)
+    stats.append(Paragraph("", styles['Normal']))
+
+    stats.append(Paragraph("Match Result", styles['Heading2']))
+    if winner != "DRAWN":
+        stats.append(Paragraph(f"{winner} win the match!", styles['Normal']))
+    else:
+        stats.append(Paragraph("Match ended in a DRAW!", styles['Normal']))
+    pdf.build(stats)
 
 def summary():
     s=Tk()
@@ -656,7 +749,8 @@ def summary():
     conn.close()
 
     data_file = f"{match_id}_data.pdf"
-    if (innings_no == 2 and OVERS == int(overs_lim)) or wickets==10:
+    # print("OVERS:", OVERS, '\nSCORE:', score, '\nWICKETS:', wickets)
+    if(innings_no == 2 and OVERS == int(overs_lim)) or (innings_no == 2 and wickets==10) or (innings_no == 2 and score>=target):
         create_pdf(team_a_batting, team_b_bowling, team_b_batting, team_a_bowling, data_file)
         CTkMessagebox(title="Match Summary", message=f"Your match summary {data_file} has been saved.", icon="info", button_color="darkGreen")
 
@@ -721,9 +815,9 @@ def display():
     for i in recent[::-1]:
         record_str+=f"{i}  "
     record1_lab.configure(text=record_str)
-    if OVERS%1==0 and OVERS!=0:
-        recent=["","","","","","","","","",""]
-        record_str=""
+    # if OVERS%1==0 and OVERS!=0:
+    #     recent=["","","","","","","","","",""]
+    #     record_str=""
 
     if innings_no == 2 and BALLS>0:
         max_overs = int(overs_lim)
@@ -754,6 +848,9 @@ def new_bowler():
 global innings_no
 innings_no=1
 def innings_change():
+    global first_inning_score
+    global first_inning_wicket
+    global first_inning_over
     global batting_side
     global team_a_batting
     global team_a_bowling 
@@ -774,6 +871,10 @@ def innings_change():
     global team_name1
     global team_name2
     global bottom_news
+    global OVERS
+    first_inning_score = score
+    first_inning_wicket = wickets
+    first_inning_over = OVERS
 
     target = score+1
     innings_no = 2
@@ -782,6 +883,10 @@ def innings_change():
     score = 0
     extras= 0
     wickets = 0
+    recent = ["", "", "", "", "", "", "", "", "", ""]
+    for i in l1:
+        i.configure(state = "normal")
+    next_over_b.place_forget()
     if batting_side==team_a_batting:
         bs=team_b
         batting_side = team_b_batting
@@ -840,6 +945,7 @@ def innings_change2():
     global _2_bat_name
     global bowler_present
     global batsman_strike
+    global recent, record_str
     global current_batsmen_balls,current_batsmen_score,current_bowler_balls,current_bowler_score,current_bowler_wickets
     global all_bowlers
     # print(b1e.get(),"HELLOOOO")
@@ -883,7 +989,8 @@ def innings_change2():
     current_bowler_wickets[bowler_present]=0
     # print(current_batsmen_score)
     # print(str(_1_bat_name))
-
+    recent=["", "", "", "", "", "", "", "", "", ""]
+    record_str = ""
     display()
     ic.destroy()
 
@@ -906,7 +1013,6 @@ def over_change():
     # print(recent)
     if innings_no == 1:
         if OVERS == int(overs_lim):
-            
             innings_change()
             return 1
     elif innings_no ==2 and OVERS==int(overs_lim):
@@ -936,14 +1042,18 @@ def over_change():
     n_lab=CTkLabel(o_frame,text="Enter new bowler name",fg_color="darkGreen",corner_radius=3,text_color="white",font=("Times",30))
     n_lab.place(x=80,y=100)
 
-    ov=customtkinter.CTkComboBox(o_frame, dropdown_fg_color="white", dropdown_text_color="green", dropdown_font=("Arial",15),dropdown_hover_color="darkGreen", width=270, height=30, border_width=2, button_color="green", border_color="green", button_hover_color="darkGreen")
+    ov=customtkinter.CTkComboBox(o_frame, values=["Bowler name"], dropdown_fg_color="white", dropdown_text_color="green", dropdown_font=("Arial",15),dropdown_hover_color="darkGreen", width=270, height=30, border_width=2, button_color="green", border_color="green", button_hover_color="darkGreen")
     ov.place(x=80,y=150)
     options = tuple(all_bowlers)
     ov.configure(values=(options))
 
-
     ov_but=CTkButton(o_frame, text="OK", command=new_bowler, bg_color="lightGreen", fg_color="#FF0000", hover=True, hover_color="orange", font=("Arial",25,"bold"), corner_radius=15, border_width=3, border_color="darkGreen", width=50, height=20)
     ov_but.place(x=230,y=200)
+
+    for i in l1:
+        i.configure(state = "normal")
+    next_over_b.place_forget()
+    
     o.mainloop()
 
 
@@ -1091,9 +1201,11 @@ def dot():
     display()
     
     if OVERS%1==0 and OVERS!=0.0:
-        over_change() 
-
-        
+        global l1
+        next_over_b.place(x=20, y=275)
+        l1 = [dot_b,one_b,two_b,three_b,four_b,six_b,wd_b,out_b,byes_1,byes_2,byes_3,byes_4, byes_wide_1,byes_wide_2,byes_wide_3,byes_wide_4, runout_b]
+        for i in l1:
+            i.configure(state = "disabled")
 
 def one():
     global score
@@ -1157,7 +1269,11 @@ def one():
         return match_finish()
     # print(OVERS,score)
     if OVERS%1==0 and OVERS!=0.0:
-        over_change()   
+        global l1
+        next_over_b.place(x=20, y=275)
+        l1 = [dot_b,one_b,two_b,three_b,four_b,six_b,wd_b,out_b,byes_1,byes_2,byes_3,byes_4, byes_wide_1,byes_wide_2,byes_wide_3,byes_wide_4, runout_b]
+        for i in l1:
+            i.configure(state = "disabled")
 
 
 def two():
@@ -1217,7 +1333,11 @@ def two():
     if innings_no==2 and (score>=target or wickets==10):
         return match_finish()
     if OVERS%1==0 and OVERS!=0.0:
-        over_change()
+        global l1
+        next_over_b.place(x=20, y=275)
+        l1 = [dot_b,one_b,two_b,three_b,four_b,six_b,wd_b,out_b,byes_1,byes_2,byes_3,byes_4, byes_wide_1,byes_wide_2,byes_wide_3,byes_wide_4, runout_b]
+        for i in l1:
+            i.configure(state = "disabled")
 
 def three():
     global score
@@ -1278,12 +1398,14 @@ def three():
 
     display()
 
-         
-
     if innings_no==2 and (score>=target or wickets==10):
         return match_finish()
     if OVERS%1==0 and OVERS!=0.0:
-        over_change()
+        global l1
+        next_over_b.place(x=20, y=275)
+        l1 = [dot_b,one_b,two_b,three_b,four_b,six_b,wd_b,out_b,byes_1,byes_2,byes_3,byes_4, byes_wide_1,byes_wide_2,byes_wide_3,byes_wide_4, runout_b]
+        for i in l1:
+            i.configure(state = "disabled")
     # print(OVERS,score)
 
 
@@ -1342,7 +1464,11 @@ def four():
     
 
     if OVERS%1==0 and OVERS!=0.0:
-           over_change()
+        global l1
+        next_over_b.place(x=20, y=275)
+        l1 = [dot_b,one_b,two_b,three_b,four_b,six_b,wd_b,out_b,byes_1,byes_2,byes_3,byes_4, byes_wide_1,byes_wide_2,byes_wide_3,byes_wide_4, runout_b]
+        for i in l1:
+            i.configure(state = "disabled")
     # print(OVERS,score)
 
 
@@ -1392,7 +1518,11 @@ def six():
     if innings_no==2 and (score>=target or wickets==10):
         return match_finish()
     if OVERS%1==0 and OVERS!=0.0:
-           over_change()
+        global l1
+        next_over_b.place(x=20, y=275)
+        l1 = [dot_b,one_b,two_b,three_b,four_b,six_b,wd_b,out_b,byes_1,byes_2,byes_3,byes_4, byes_wide_1,byes_wide_2,byes_wide_3,byes_wide_4, runout_b]
+        for i in l1:
+            i.configure(state = "disabled")
     # print(OVERS,score)
 
 def wd():
@@ -1500,7 +1630,6 @@ def freehit():
     byes_1b=CTkButton(f1,text="B1",command=lambda:[bind(),byes_1_f()],fg_color="#FF0000",hover=True,hover_color="orange",font=("Arial",15,"bold"),corner_radius=15,border_width=3,border_color="darkGreen",width=50,height=20)
     byes_1b.place(x=30,y=120)
 
-
     byes_2b=CTkButton(f1,text="B2",command=lambda:[bind(),byes_2_f()],fg_color="#FF0000",hover=True,hover_color="orange",font=("Arial",15,"bold"),corner_radius=15,border_width=3,border_color="darkGreen",width=50,height=20)
     byes_2b.place(x=115,y=120)
 
@@ -1524,8 +1653,6 @@ def freehit():
 
     runout_bb=CTkButton(f1,text="RUN-OUT",command=lambda:[bind(),run_out()],fg_color="#FF0000",hover=True,hover_color="orange",font=("Arial",15,"bold"),corner_radius=15,border_width=3,border_color="darkGreen",width=30,height=20)
     runout_bb.place(x=50,y=240)
-
-
     
 def out():
     global wickets
@@ -1553,6 +1680,8 @@ def out():
     # current_batsmen_balls.pop(dismissed)
     BALLS+=1
     wickets+=1
+    if innings_no == 1 and wickets == 10:
+        innings_change()
     X= BALLS//6
     Y=(BALLS%6)/10
     OVERS = X+Y
@@ -1563,8 +1692,9 @@ def out():
     c.execute(f"""UPDATE {bowling_side} SET OVERS={a+b},WICKETS ={current_bowler_wickets[bowler_present]} WHERE BOWLER = '{bowler_present}'""")
     conn.commit()
     conn.close()
-
+    
     display()
+    
     
     if innings_no==2 and (score>=target or wickets==10):
         return match_finish()
@@ -2016,8 +2146,18 @@ def undo():
     global _1_bat_name
     global _2_bat_name
     global bowler_present
+    global bottom_news
 
-
+    # if OVERS%1==0 and OVERS!=0.0:
+    #     BALLS-=1
+    #     X= BALLS//6
+    #     Y=(BALLS%6)/10
+        
+    #     OVERS = X+Y
+    print(recent)
+    next_over_b.place_forget()
+    for i in l1:
+        i.configure(state = "normal")
 
     if recent[0]=="DOT":
         BALLS-=1
@@ -2047,7 +2187,7 @@ def undo():
 
             remaining_balls = (max_overs - current_overs) * 6 - current_balls
             bottom_news.configure(text=f"Need {target-score} on {remaining_balls} balls")
-        else:
+        elif BALLS==0 and innings_no == 2:
             bottom_news.configure(text=f"Need {target-score} on {int(overs_lim) * 6} balls")
         display()
 
@@ -2092,7 +2232,7 @@ def undo():
 
             remaining_balls = (max_overs - current_overs) * 6 - current_balls
             bottom_news.configure(text=f"Need {target-score} on {remaining_balls} balls")
-        else:
+        elif BALLS==0 and innings_no == 2:
             bottom_news.configure(text=f"Need {target-score} on {int(overs_lim) * 6} balls")
         display()
 
@@ -2130,7 +2270,7 @@ def undo():
 
             remaining_balls = (max_overs - current_overs) * 6 - current_balls
             bottom_news.configure(text=f"Need {target-score} on {remaining_balls} balls")
-        else:
+        elif BALLS==0 and innings_no == 2:
             bottom_news.configure(text=f"Need {target-score} on {int(overs_lim) * 6} balls")
         display()
         # print(OVERS,score)
@@ -2172,7 +2312,7 @@ def undo():
 
             remaining_balls = (max_overs - current_overs) * 6 - current_balls
             bottom_news.configure(text=f"Need {target-score} on {remaining_balls} balls")
-        else:
+        elif BALLS==0 and innings_no == 2:
             bottom_news.configure(text=f"Need {target-score} on {int(overs_lim) * 6} balls")
         display()
 
@@ -2211,7 +2351,7 @@ def undo():
 
             remaining_balls = (max_overs - current_overs) * 6 - current_balls
             bottom_news.configure(text=f"Need {target-score} on {remaining_balls} balls")
-        else:
+        elif BALLS==0 and innings_no == 2:
             bottom_news.configure(text=f"Need {target-score} on {int(overs_lim) * 6} balls")
         display()
 
@@ -2249,7 +2389,7 @@ def undo():
 
             remaining_balls = (max_overs - current_overs) * 6 - current_balls
             bottom_news.configure(text=f"Need {target-score} on {remaining_balls} balls")
-        else:
+        elif BALLS==0 and innings_no == 2:
             bottom_news.configure(text=f"Need {target-score} on {int(overs_lim) * 6} balls")
         display()
         # print(OVERS,score)
@@ -2281,7 +2421,7 @@ def undo():
 
             remaining_balls = (max_overs - current_overs) * 6 - current_balls
             bottom_news.configure(text=f"Need {target-score} on {remaining_balls} balls")
-        else:
+        elif BALLS==0 and innings_no == 2:
             bottom_news.configure(text=f"Need {target-score} on {int(overs_lim) * 6} balls")
         display()
 
@@ -2319,7 +2459,7 @@ def undo():
 
             remaining_balls = (max_overs - current_overs) * 6 - current_balls
             bottom_news.configure(text=f"Need {target-score} on {remaining_balls} balls")
-        else:
+        elif BALLS==0 and innings_no == 2:
             bottom_news.configure(text=f"Need {target-score} on {int(overs_lim) * 6} balls")
         display()
 
@@ -2360,7 +2500,7 @@ def undo():
 
             remaining_balls = (max_overs - current_overs) * 6 - current_balls
             bottom_news.configure(text=f"Need {target-score} on {remaining_balls} balls")
-        else:
+        elif BALLS==0 and innings_no == 2:
             bottom_news.configure(text=f"Need {target-score} on {int(overs_lim) * 6} balls")
 
         display()
@@ -2396,7 +2536,7 @@ def undo():
 
             remaining_balls = (max_overs - current_overs) * 6 - current_balls
             bottom_news.configure(text=f"Need {target-score} on {remaining_balls} balls")
-        else:
+        elif BALLS==0 and innings_no == 2:
             bottom_news.configure(text=f"Need {target-score} on {int(overs_lim) * 6} balls")
         display()
 
@@ -2434,7 +2574,7 @@ def undo():
 
             remaining_balls = (max_overs - current_overs) * 6 - current_balls
             bottom_news.configure(text=f"Need {target-score} on {remaining_balls} balls")
-        else:
+        elif BALLS==0 and innings_no == 2:
             bottom_news.configure(text=f"Need {target-score} on {int(overs_lim) * 6} balls")
         display()
 
@@ -2468,7 +2608,7 @@ def undo():
 
             remaining_balls = (max_overs - current_overs) * 6 - current_balls
             bottom_news.configure(text=f"Need {target-score} on {remaining_balls} balls")
-        else:
+        elif BALLS==0 and innings_no == 2:
             bottom_news.configure(text=f"Need {target-score} on {int(overs_lim) * 6} balls")
         display()
 
@@ -2495,7 +2635,7 @@ def undo():
 
             remaining_balls = (max_overs - current_overs) * 6 - current_balls
             bottom_news.configure(text=f"Need {target-score} on {remaining_balls} balls")
-        else:
+        elif BALLS==0 and innings_no == 2:
             bottom_news.configure(text=f"Need {target-score} on {int(overs_lim) * 6} balls")
         display()
         
@@ -2518,7 +2658,7 @@ def undo():
 
             remaining_balls = (max_overs - current_overs) * 6 - current_balls
             bottom_news.configure(text=f"Need {target-score} on {remaining_balls} balls")
-        else:
+        elif BALLS==0 and innings_no == 2:
             bottom_news.configure(text=f"Need {target-score} on {int(overs_lim) * 6} balls")
         display()
 
@@ -2544,7 +2684,7 @@ def undo():
 
             remaining_balls = (max_overs - current_overs) * 6 - current_balls
             bottom_news.configure(text=f"Need {target-score} on {remaining_balls} balls")
-        else:
+        elif BALLS==0 and innings_no == 2:
             bottom_news.configure(text=f"Need {target-score} on {int(overs_lim) * 6} balls")
         display()
 
@@ -2567,7 +2707,7 @@ def undo():
 
             remaining_balls = (max_overs - current_overs) * 6 - current_balls
             bottom_news.configure(text=f"Need {target-score} on {remaining_balls} balls")
-        else:
+        elif BALLS==0 and innings_no == 2:
             bottom_news.configure(text=f"Need {target-score} on {int(overs_lim) * 6} balls")
         display()
       
